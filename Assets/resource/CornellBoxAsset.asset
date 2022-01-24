@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed395685a7815c14d9466f678e55fdd9, type: 3}
+  m_Name: CornellBoxAsset
+  m_EditorClassIdentifier: 
+  shader: {fileID: 4807578003741378534, guid: d62d182bb96390b49865404d89ed7ab9, type: 3}
+  mp: {fileID: 8900000, guid: b2b0dd4b61793d94b833939fec0c0d94, type: 3}
+  EnableFog: 1
+  _MaxFogDistance: 2000
+  _FogColor: {r: 0.9056604, g: 0.8601005, b: 0.37935206, a: 0}
+  _MipFogParameters: {x: 0, y: 0, z: 0, w: 0}
+  _HeightFogBaseExtinction: 0.0002
+  _HeightFogBaseHeight: 11
+  _MaximumHeight: 0
+  _GlobalFogAnisotropy: 0
+  AngularDiameter: 1
+  owenScrambled256Tex: {fileID: 2800000, guid: 2a205358e67aa9e4a94a128ac9362f4e, type: 3}
+  scramblingTile8SPP: {fileID: 2800000, guid: 6185473f62ad3e74da4acac5d482917a, type: 3}
+  rankingTile8SPP: {fileID: 2800000, guid: 1e604a266c415cd46b36d97cd9220aa8, type: 3}
+  scramblingTex: {fileID: 2800000, guid: bf25cd6288e2c8d43854a61a8496a830, type: 3}
+  diffusionProfileSettings: {fileID: 11400000, guid: 11d7468e3cbf3594a87b375861b6ee66, type: 2}
+  PipelineRayTracingResources: {fileID: 11400000, guid: da3666351f1b6d34cafc47526eb87c52, type: 2}
+  focusDistance: 10
+  aperture: 0

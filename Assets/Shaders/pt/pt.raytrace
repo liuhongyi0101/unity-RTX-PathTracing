@@ -1,0 +1,109 @@
+﻿#pragma max_recursion_depth 11
+
+ #include "../Common/PtCommon.hlsl"
+#include "../PRNG.hlsl"
+
+#include "PathTracingIntersection.hlsl"
+
+
+RWTexture2D<float4> _OutputTarget;
+TextureCube<float4> _cubemap;
+SamplerState LinearClampSampler;
+
+float4 _OutputTargetSize;
+
+inline float3 BackgroundColor(float3 origin, float3 direction)
+{
+  float t = 0.5f * (direction.y + 1.0f);
+  return (1.0f - t) * float3(0.7f, 0.9f, 1.0f) + t * float3(0.5f, 0.7f, 1.0f);
+}
+
+[shader("miss")]
+void MissCamera(inout PathIntersection pathIntersection : SV_RayPayload)
+{
+   float3 origin = WorldRayOrigin();
+  float3 direction = WorldRayDirection();
+
+  pathIntersection.value =pow( _cubemap.SampleLevel(LinearClampSampler, direction, 0),0.45);
+// pathIntersection.value = _cubemap.SampleLevel(LinearClampSampler, direction, 0).rgb;
+ 
+}
+[shader("miss")]
+void MissLight(inout PathIntersection pathIntersection : SV_RayPayload)
+{
+
+
+}
+
+
+[shader("miss")]
+void MissMaterial(inout PathIntersection pathIntersection : SV_RayPayload)
+{
+    float3 direction = WorldRayDirection();
+    pathIntersection.value =_cubemap.SampleLevel(LinearClampSampler, direction, 0).rgb;
+}
+
+
+
+[shader("raygeneration")]
+void CornellBoxGenShader()
+{
+  const uint2 dispatchIdx = DispatchRaysIndex().xy;
+      // Get the current pixel coordinates
+    uint2 currentPixelCoord = uint2(dispatchIdx.x, dispatchIdx.y);
+  const uint PRNGIndex = dispatchIdx.y * (int)_OutputTargetSize.x + dispatchIdx.x;
+  uint4 PRNGStates = _PRNGStates[PRNGIndex];
+
+  float4 finalColor = float4(0, 0, 0, 0);
+  {
+    float3 origin;
+    float3 direction;
+    float2 apertureOffset = GetRandomInUnitDisk(PRNGStates);
+    float2 offset = float2(GetRandomValue(PRNGStates), GetRandomValue(PRNGStates));
+    GenerateFocusCameraRayWithOffset(origin, direction, apertureOffset, offset);
+
+    RayDesc rayDescriptor;
+    rayDescriptor.Origin = origin;
+    rayDescriptor.Direction = direction;
+    rayDescriptor.TMin = 1e-5f;
+    rayDescriptor.TMax = _CameraFarDistance;
+
+
+    // Create and init the PathIntersection structure for this
+    PathIntersection pathIntersection;
+    pathIntersection.value = 1.0;
+    pathIntersection.alpha = 1.0;
+    pathIntersection.remainingDepth = MAX_DEPTH;
+    pathIntersection.pixelCoord = currentPixelCoord;
+    pathIntersection.maxRoughness = 0.0;
+    pathIntersection.PRNGStates =  PRNGStates;
+    // In order to achieve filtering for the textures, we need to compute the spread angle of the pixel
+    pathIntersection.cone.spreadAngle = 1.0;
+    pathIntersection.cone.width = 0.0;
+
+    // Evaluate the ray intersection
+    TraceRay(_AccelerationStructure, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, RAYTRACINGRENDERERFLAG_PATH_TRACING, 0, 1, 0, rayDescriptor, pathIntersection);
+
+   // PRNGStates = rayIntersection.PRNGStates;
+    finalColor.rgb += pathIntersection.value;
+
+  }
+  finalColor = float4(sqrt(finalColor.r), sqrt(finalColor.g), sqrt(finalColor.b), finalColor.a);
+
+  _PRNGStates[PRNGIndex] = PRNGStates;
+  if (_FrameIndex > 1)
+  {
+    float a = 1.0f / (float)_FrameIndex;
+    finalColor = _OutputTarget[dispatchIdx] * (1.0f - a) + finalColor * a;
+  }
+
+  _OutputTarget[dispatchIdx] = finalColor;
+}
+
+// This should never be called, return magenta just in case
+[shader("closesthit")]
+void ClosestHit(inout PathIntersection pathIntersection : SV_RayPayload, AttributeData attributeData : SV_IntersectionAttributes)
+{
+    pathIntersection.value = float3(1.0, 0.0, 0.5);
+}
+

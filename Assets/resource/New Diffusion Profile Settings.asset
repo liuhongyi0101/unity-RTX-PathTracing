@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0bd9daa723122c48b817dfcc634e295, type: 3}
+  m_Name: New Diffusion Profile Settings
+  m_EditorClassIdentifier: 
+  profile:
+    scatteringDistance: {r: 927.39624, g: 551.23914, b: 64.74272, a: 1}
+    transmissionTint: {r: 0.4811321, g: 0.30138838, b: 0.30138838, a: 1}
+    texturingMode: 0
+    transmissionMode: 1
+    thicknessRemap: {x: 0, y: 5.11}
+    worldScale: 6
+    ior: 1.33
+    hash: 0
+  worldScaleAndFilterRadiusAndThicknessRemap: {x: 6, y: 15361.741, z: 0, w: 5.11}
+  shapeParamAndMaxScatterDist: {x: 0.0010782877, y: 0.0018140947, z: 0.015445752, w: 927.39624}
+  transmissionTintAndFresnel0: {x: 0.12028302, y: 0.075347096, z: 0.075347096, w: 0.020059317}
+  disabledTransmissionTintAndFresnel0: {x: 0, y: 0, z: 0, w: 0.020059317}
+  updateCount: 1170
