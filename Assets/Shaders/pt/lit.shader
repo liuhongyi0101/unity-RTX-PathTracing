@@ -15,6 +15,8 @@
        _NormalMap("NormalMap", 2D) = "bump" {}     // Tangent space normal map
        _BaseColorMap("BaseColorMap", 2D) = "white" {}
        [Toggle(SUBSURFACE)] _SUBSURFACE("SUBSURFACE", Float) = 0
+
+       [Toggle(NORMALMAP)] _NORMALMAP("NORMALMAP", Float) = 0
        [Toggle(REFRACTION_THIN)] _REFRACTION_THIN("REFRACTION_THIN", Float) = 0
        [Toggle(LIGHTSOURCE)] _LIGHT_SOURCE("LIGHT SOURCE", Float) = 0
        [Toggle(SURFACE_TYPE_TRANSPARENT)] _SURFACE_TYPE_TRANSPARENT("SURFACE_TYPE_TRANSPARENT", Float) = 0
@@ -62,10 +64,9 @@
 
         half4 frag(v2f i) : SV_Target
         {
-          half4 col = _Color * half4(dot(i.normal, _Sundir.xyz).xxx, 1.0f);
-          // apply fog
-          UNITY_APPLY_FOG(i.fogCoord, col);
-          return col;
+          half4 col = _Color * half4(dot(float3(1.0,0,0), _Sundir.xyz).xxx, 1.0f);
+
+          return _Color;
         }
             ENDCG
     }
@@ -86,6 +87,7 @@
             #pragma shader_feature REFRACTION_THIN
             #pragma shader_feature LIGHTSOURCE
             #pragma shader_feature SURFACE_TYPE_TRANSPARENT
+            #pragma shader_feature NORMALMAP
 
             #include "../Common/PtCommon.hlsl"
             #include "../PRNG.hlsl"
@@ -100,7 +102,9 @@
             #include "ShaderPassPathTracing.hlsl"
             #include "PathTracingSampling.hlsl"
             TEXTURE2D(_BaseColorMap);
+            TEXTURE2D(_NormalMap);
             SAMPLER(sampler_BaseColorMap);
+            SAMPLER(sampler_NormalMap);
 
 
          [shader("closesthit")]
@@ -173,8 +177,8 @@
             GetSurfaceAndBuiltinData(fragInput, -WorldRayDirection(), posInput, surfaceData, builtinData, currentVertex, pathIntersection.cone, isVisible);
             // Check if we want to compute direct and emissive lighting for current depth
             bool computeDirect = currentDepth >= MIN_DEPTH - 1;
-            float3 normalTS = UnpackNormalmapRGorAG(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, currentVertex.texCoord0));
-            float3 normalWS = SafeNormalize(TransformTangentToWorld(normalTS, input.tangentToWorld));
+            float3 normalTS = UnpackNormalmapRGorAG(SAMPLE_TEXTURE2D_LOD(_NormalMap, sampler_NormalMap, currentVertex.texCoord0,0)).rgb;
+            float3 normalWS = normalize(mul(normalTS, fragInput.tangentToWorld)); 
             float4 color =  SAMPLE_TEXTURE2D_LOD(_BaseColorMap, sampler_BaseColorMap, currentVertex.texCoord0, 0);
             // Compute the bsdf data
             BSDFDataMini bsdfDD = ConvertSurfaceDataToBSDFData(posInput.positionSS);
@@ -187,7 +191,11 @@
 //                bsdfDD.ior =_IOR;
 //            }
 //#endif
+#if NORMALMAP
             bsdfDD.normalWS = normalWS;
+#else
+            bsdfDD.normalWS = normalize(mul(currentVertex.normalOS, (float3x3)WorldToObject3x4()));
+#endif
             bsdfDD.geomNormalWS = geomNormal;
             // Override the geometric normal (otherwise, it is merely the non-mapped smooth normal)
             // Also make sure that it is in the same hemisphere as the shading normal (which may have been flipped)
@@ -202,7 +210,7 @@
             // And reset the ray intersection color, which will store our final result
             pathIntersection.value = computeDirect ? _EmissionColor : 0.0;
             #if LIGHTSOURCE
-            pathIntersection.value = _EmissionColor * _Color * normalWS;
+            pathIntersection.value = _EmissionColor * _Color * color;
             pathIntersection.remainingDepth = 0;
             return;
             #endif

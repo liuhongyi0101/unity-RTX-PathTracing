@@ -15,6 +15,7 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/AreaLighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/ImageBasedLighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/VolumeRendering.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
 #include "../../Scripts/Lights/Lighting/LightDefinition.cs.hlsl"
 #include "../../Scripts/Lights/LightLoop/raytracing/ShaderVariablesRaytracingLightLoop.cs.hlsl"
 #include "../Common/SphericalQuad.hlsl"
